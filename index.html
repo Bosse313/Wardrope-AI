@@ -1,21 +1,627 @@
 <!doctype html>
 <html lang="de">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Wardrope AI</title>
-<style>
-:root{--p:#5b35d5;--bg:#f6f5fb;--card:#fff;--text:#202124}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{background:linear-gradient(135deg,#5b35d5,#8d6bea);color:white;padding:28px 22px}header h1{margin:0 0 5px;font-size:30px}main{max-width:1100px;margin:auto;padding:20px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.tabs button,.primary,button{border:0;border-radius:10px;padding:11px 15px;cursor:pointer;font-weight:600}.tabs button{background:#e5e0fa;color:#3b258d}.tabs button.active,.primary{background:var(--p);color:white}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.card{background:var(--card);border-radius:16px;padding:17px;box-shadow:0 2px 12px #28205d12}.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}.stat{min-width:130px}.stat b{display:block;font-size:28px;color:var(--p);margin-top:7px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}select,input{padding:10px;border:1px solid #ddd;border-radius:9px;background:white}.item{display:flex;gap:12px;align-items:center}.icon{width:54px;height:54px;border-radius:12px;background:#eee9ff;display:grid;place-items:center;font-size:27px}.muted{color:#666}.pill{display:inline-block;border-radius:99px;padding:5px 9px;background:#eee;margin:4px 3px 0 0;font-size:12px}.clean{background:#d9f7df;color:#176b2a}.wash{background:#dceeff;color:#14528a}.worn{background:#fff0d6;color:#885500}.modal{position:fixed;inset:0;background:#0007;display:none;place-items:center;padding:20px}.modal>div{background:white;border-radius:16px;padding:22px;max-width:440px;width:100%}.modal input,.modal select{width:100%;margin:7px 0}.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:15px}@media(max-width:600px){main{padding:12px}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wardrope AI</title>
+  <style>
+    :root {
+      --bg: #f5f3fb;
+      --panel: #ffffff;
+      --panel-2: #f0ebff;
+      --primary: #5b35d5;
+      --primary-strong: #4426b5;
+      --primary-soft: #efe9ff;
+      --text: #1f1b2d;
+      --muted: #6a6881;
+      --line: #e4e0f0;
+      --success: #dff7e8;
+      --success-text: #1f7c46;
+      --warn: #fff2d9;
+      --warn-text: #8a5b00;
+      --wash: #dfeeff;
+      --wash-text: #0d5aa8;
+      --shadow: 0 10px 30px rgba(60, 40, 120, 0.09);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: linear-gradient(135deg, var(--primary), #7d60eb);
+      padding: 18px 22px 22px;
+      color: white;
+      box-shadow: 0 8px 18px rgba(91, 53, 213, 0.25);
+    }
+
+    .topbar-inner {
+      max-width: 1150px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 3vw, 38px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      opacity: 0.9;
+      margin-top: 4px;
+      font-size: 14px;
+    }
+
+    .add-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    main {
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 18px 18px 40px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .nav button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav .active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      margin-top: 8px;
+      font-size: clamp(28px, 3vw, 36px);
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .section-head {
+      margin: 20px 0 10px;
+      font-size: 24px;
+      letter-spacing: -0.04em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      letter-spacing: -0.03em;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 5px 9px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .clean { background: var(--success); color: var(--success-text); }
+    .wash { background: var(--wash); color: var(--wash-text); }
+    .worn { background: var(--warn); color: var(--warn-text); }
+
+    .item-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .item-row:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .item-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: var(--primary-soft);
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+    }
+
+    .item-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-name {
+      font-weight: 700;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-sub {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    select {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: white;
+      color: var(--text);
+      padding: 9px 10px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .toolbar input, .toolbar select {
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: white;
+      min-width: 180px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 14, 28, 0.45);
+      place-items: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal.open { display: grid; }
+
+    .modal-card {
+      width: min(100%, 430px);
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+    }
+
+    .modal h2 {
+      margin: 0 0 12px;
+      font-size: 26px;
+      letter-spacing: -0.04em;
+    }
+
+    .field {
+      margin-top: 10px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .field input, .field select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      font-size: 15px;
+      background: white;
+    }
+
+    .actions {
+      margin-top: 18px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    button.primary,
+    .actions button {
+      border: none;
+      border-radius: 11px;
+      padding: 10px 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .actions .primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .actions .secondary {
+      background: #f1f0f6;
+      color: var(--text);
+    }
+
+    .empty {
+      background: var(--panel);
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      padding: 30px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    @media (max-width: 620px) {
+      .topbar-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
 </head>
 <body>
-<header><h1>Wardrope AI</h1><div>Dein digitaler Kleiderschrank</div></header>
-<main><div class="tabs"><button class="active" data-tab="home">Start</button><button data-tab="wardrobe">Kleidung</button><button data-tab="outfits">Outfits</button><button data-tab="laundry">Wäsche</button><button class="primary" onclick="openModal()">＋ Kleidung hinzufügen</button></div><section id="app"></section></main>
-<div class="modal" id="modal"><div><h2>Neue Kleidung</h2><input id="name" placeholder="Name, z. B. Weißes T-Shirt"><select id="category"><option>T-Shirt</option><option>Polo</option><option>Hemd</option><option>Hose</option><option>Jeans</option><option>Jacke</option><option>Pullover</option><option>Schuhe</option><option>Accessoire</option></select><select id="color"><option>Weiß</option><option>Schwarz</option><option>Blau</option><option>Marine</option><option>Beige</option><option>Grau</option><option>Rot</option><option>Grün</option></select><select id="style"><option>Casual</option><option>Smart Casual</option><option>Sportlich</option><option>Elegant</option></select><div class="actions"><button onclick="closeModal()">Abbrechen</button><button class="primary" onclick="addItem()">Speichern</button></div></div></div>
-<script>
-const key='wardrope-items';let items=JSON.parse(localStorage.getItem(key)||'null')||[{id:1,name:'Weißes T-Shirt',category:'T-Shirt',color:'Weiß',style:'Casual',status:'clean'},{id:2,name:'Dunkle Jeans',category:'Jeans',color:'Blau',style:'Casual',status:'clean'},{id:3,name:'Schwarze Sneaker',category:'Schuhe',color:'Schwarz',style:'Casual',status:'clean'},{id:4,name:'Marine Polo',category:'Polo',color:'Marine',style:'Smart Casual',status:'clean'},{id:5,name:'Beige Chino',category:'Hose',color:'Beige',style:'Smart Casual',status:'in_wash'}];let tab='home';
-function save(){localStorage.setItem(key,JSON.stringify(items))}function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function statusText(s){return s==='clean'?'Sauber':s==='worn'?'Getragen':'In der Wäsche'}function icon(c){return ({'T-Shirt':'👕','Polo':'👕','Hemd':'👔','Hose':'👖','Jeans':'👖','Jacke':'🧥','Pullover':'🧶','Schuhe':'👟','Accessoire':'🧢'})[c]||'👚'}function setStatus(id,s){items.find(x=>x.id===id).status=s;save();render()}function card(x){return `<div class="card item"><div class="icon">${icon(x.category)}</div><div style="flex:1"><b>${esc(x.name)}</b><div class="muted">${x.category} · ${x.color} · ${x.style}</div><span class="pill ${x.status}">${statusText(x.status)}</span></div><select onchange="setStatus(${x.id},this.value)"><option value="clean" ${x.status==='clean'?'selected':''}>Sauber</option><option value="worn" ${x.status==='worn'?'selected':''}>Getragen</option><option value="in_wash" ${x.status==='in_wash'?'selected':''}>Wäsche</option></select></div>`}
-function outfits(){let top=items.filter(x=>x.status==='clean'&&['T-Shirt','Polo','Hemd'].includes(x.category)),bottom=items.filter(x=>x.status==='clean'&&['Hose','Jeans'].includes(x.category)),shoes=items.filter(x=>x.status==='clean'&&x.category==='Schuhe');if(!top.length||!bottom.length||!shoes.length)return '<div class="card">Füge mindestens ein Oberteil, eine Hose und Schuhe hinzu, um Outfits zu erhalten.</div>';return [0,1,2].map(i=>{let a=top[i%top.length],b=bottom[i%bottom.length],c=shoes[i%shoes.length];return `<div class="card"><h3>${['Casual Daily Look','Smart Casual','Weekend Style'][i]} <span class="pill clean">${84+i*5}% passend</span></h3><p>${a.color} und ${b.color} passen gut zusammen. Das Outfit ist für den Alltag geeignet.</p><span class="pill">${icon(a.category)} ${esc(a.name)}</span><span class="pill">${icon(b.category)} ${esc(b.name)}</span><span class="pill">${icon(c.category)} ${esc(c.name)}</span></div>`}).join('')}
-function render(){let a=document.getElementById('app');if(tab==='home'){let clean=items.filter(x=>x.status==='clean').length,wash=items.filter(x=>x.status==='in_wash').length;a.innerHTML=`<div class="stats"><div class="card stat">Kleidungsstücke<b>${items.length}</b></div><div class="card stat">Verfügbar<b>${clean}</b></div><div class="card stat">Wäsche<b>${wash}</b></div></div><h2>Empfohlene Outfits</h2><div class="grid">${outfits()}</div>`}else if(tab==='wardrobe'){a.innerHTML=`<div class="toolbar"><select id="filter" onchange="render()"><option>Alle</option>${[...new Set(items.map(x=>x.category))].map(x=>`<option ${x===document.getElementById('filter')?.value?'selected':''}>${x}</option>`).join('')}</select><input id="search" placeholder="Suchen..." oninput="render()" value="${esc(document.getElementById('search')?.value||'')}"></div><div class="grid">${items.filter(x=>(!document.getElementById('filter')||document.getElementById('filter').value==='Alle'||x.category===document.getElementById('filter').value)&&(!document.getElementById('search')||x.name.toLowerCase().includes(document.getElementById('search').value.toLowerCase()))).map(card).join('')||'<div class="card">Noch keine Kleidung vorhanden.</div>'}</div>`}else if(tab==='outfits'){a.innerHTML='<h2>Outfit-Vorschläge</h2><div class="grid">'+outfits()+'</div>'}else{let w=items.filter(x=>x.status==='in_wash');a.innerHTML='<h2>Wäsche</h2>'+ (w.length?'<div class="grid">'+w.map(card).join('')+'</div>':'<div class="card">Alles ist sauber. 🎉</div>')}}
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));render()});function openModal(){document.getElementById('modal').style.display='grid'}function closeModal(){document.getElementById('modal').style.display='none'}function addItem(){let n=document.getElementById('name').value.trim();if(!n)return alert('Bitte einen Namen eingeben.');items.unshift({id:Date.now(),name:n,category:document.getElementById('category').value,color:document.getElementById('color').value,style:document.getElementById('style').value,status:'clean'});save();closeModal();document.getElementById('name').value='';render()}render();
-</script>
-</body></html>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <h1>Wardrope AI</h1>
+        <div class="subtitle">Dein digitaler Kleiderschrank</div>
+      </div>
+      <button class="add-btn" onclick="openModal()">＋ Kleidung hinzufügen</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="nav">
+      <button class="active" data-tab="home">Start</button>
+      <button data-tab="wardrobe">Kleidung</button>
+      <button data-tab="outfits">Outfits</button>
+      <button data-tab="laundry">Wäsche</button>
+    </div>
+
+    <div id="app"></div>
+  </main>
+
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <h2>Neue Kleidung</h2>
+      <div class="field">
+        <label>Name</label>
+        <input id="name" placeholder="z. B. Weißes T-Shirt" />
+      </div>
+      <div class="field">
+        <label>Kategorie</label>
+        <select id="category">
+          <option>T-Shirt</option>
+          <option>Polo</option>
+          <option>Hemd</option>
+          <option>Hose</option>
+          <option>Jeans</option>
+          <option>Jacke</option>
+          <option>Pullover</option>
+          <option>Schuhe</option>
+          <option>Accessoire</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Farbe</label>
+        <select id="color">
+          <option>Weiß</option>
+          <option>Schwarz</option>
+          <option>Blau</option>
+          <option>Marine</option>
+          <option>Beige</option>
+          <option>Grau</option>
+          <option>Rot</option>
+          <option>Grün</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Stil</label>
+        <select id="style">
+          <option>Casual</option>
+          <option>Smart Casual</option>
+          <option>Sportlich</option>
+          <option>Elegant</option>
+        </select>
+      </div>
+
+      <div class="actions">
+        <button class="secondary" onclick="closeModal()">Abbrechen</button>
+        <button class="primary" onclick="addItem()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'wardrope-ai-items';
+    let activeTab = 'home';
+    let filterValue = 'Alle';
+    let searchValue = '';
+
+    let items = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || [
+      { id: 1, name: 'Weißes T-Shirt', category: 'T-Shirt', color: 'Weiß', style: 'Casual', status: 'clean' },
+      { id: 2, name: 'Dunkle Jeans', category: 'Jeans', color: 'Blau', style: 'Casual', status: 'clean' },
+      { id: 3, name: 'Marine Polo', category: 'Polo', color: 'Marine', style: 'Smart Casual', status: 'clean' },
+      { id: 4, name: 'Schwarze Sneaker', category: 'Schuhe', color: 'Schwarz', style: 'Casual', status: 'clean' },
+      { id: 5, name: 'Beige Chino', category: 'Hose', color: 'Beige', style: 'Smart Casual', status: 'in_wash' }
+    ];
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function iconFor(category) {
+      const map = {
+        'T-Shirt': '👕',
+        'Polo': '👕',
+        'Hemd': '👔',
+        'Hose': '👖',
+        'Jeans': '👖',
+        'Jacke': '🧥',
+        'Pullover': '🧶',
+        'Schuhe': '👟',
+        'Accessoire': '🧢'
+      };
+      return map[category] || '👚';
+    }
+
+    function statusLabel(status) {
+      if (status === 'clean') return 'Sauber';
+      if (status === 'worn') return 'Getragen';
+      return 'In der Wäsche';
+    }
+
+    function statusClass(status) {
+      if (status === 'clean') return 'clean';
+      if (status === 'worn') return 'worn';
+      return 'wash';
+    }
+
+    function setStatus(id, status) {
+      const item = items.find(x => x.id === id);
+      if (!item) return;
+      item.status = status;
+      save();
+      render();
+    }
+
+    function itemCard(item) {
+      return `
+        <div class="card item-row">
+          <div class="item-icon">${iconFor(item.category)}</div>
+          <div class="item-main">
+            <div class="item-name">${escapeHtml(item.name)}</div>
+            <div class="item-sub">${escapeHtml(item.category)} · ${escapeHtml(item.color)} · ${escapeHtml(item.style)}</div>
+            <span class="badge ${statusClass(item.status)}">${statusLabel(item.status)}</span>
+          </div>
+          <select onchange="setStatus(${item.id}, this.value)">
+            <option value="clean" ${item.status === 'clean' ? 'selected' : ''}>Sauber</option>
+            <option value="worn" ${item.status === 'worn' ? 'selected' : ''}>Getragen</option>
+            <option value="in_wash" ${item.status === 'in_wash' ? 'selected' : ''}>In der Wäsche</option>
+          </select>
+        </div>
+      `;
+    }
+
+    function generateOutfits() {
+      let tops = items.filter(x => x.status === 'clean' && ['T-Shirt', 'Polo', 'Hemd'].includes(x.category));
+      let bottoms = items.filter(x => x.status === 'clean' && ['Hose', 'Jeans'].includes(x.category));
+      let shoes = items.filter(x => x.status === 'clean' && x.category === 'Schuhe');
+
+      if (!tops.length || !bottoms.length || !shoes.length) {
+        return '<div class="empty">Füge ein Oberteil, eine Hose und Schuhe hinzu, um Outfit-Vorschläge zu sehen.</div>';
+      }
+
+      const suggestions = [
+        { title: 'Casual Daily Look', note: 'Leicht, bequem und perfekt für den Alltag.' },
+        { title: 'Smart Casual', note: 'Saubere Kombination mit klarer Struktur und Stil.' },
+        { title: 'Weekend Style', note: 'Locker und modern für freie Tage.' }
+      ];
+
+      return suggestions.map((suggestion, index) => {
+        const top = tops[index % tops.length];
+        const bottom = bottoms[(index + 1) % bottoms.length];
+        const shoe = shoes[(index + 2) % shoes.length];
+        return `
+          <div class="card">
+            <h3>${suggestion.title}</h3>
+            <div class="meta">${suggestion.note}</div>
+            <div class="badge clean">${88 + index * 4}% passend</div>
+            <div class="badge">${iconFor(top.category)} ${escapeHtml(top.name)}</div>
+            <div class="badge">${iconFor(bottom.category)} ${escapeHtml(bottom.name)}</div>
+            <div class="badge">${iconFor(shoe.category)} ${escapeHtml(shoe.name)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderHome() {
+      const cleanCount = items.filter(x => x.status === 'clean').length;
+      const washCount = items.filter(x => x.status === 'in_wash').length;
+      const html = `
+        <div class="stats">
+          <div class="stat"><div class="stat-label">Gesamt</div><div class="stat-value">${items.length}</div></div>
+          <div class="stat"><div class="stat-label">Verfügbar</div><div class="stat-value">${cleanCount}</div></div>
+          <div class="stat"><div class="stat-label">Wäsche</div><div class="stat-value">${washCount}</div></div>
+        </div>
+        <h2 class="section-head">Empfohlene Outfits</h2>
+        <div class="grid">${generateOutfits()}</div>
+      `;
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function renderWardrobe() {
+      const categories = ['Alle', ...new Set(items.map(x => x.category))];
+      const filtered = items.filter(item => {
+        const matchCategory = filterValue === 'Alle' || item.category === filterValue;
+        const matchSearch = item.name.toLowerCase().includes(searchValue.toLowerCase());
+        return matchCategory && matchSearch;
+      });
+
+      const html = `
+        <div class="toolbar">
+          <select onchange="filterValue = this.value; render();">
+            ${categories.map(c => `<option ${c === filterValue ? 'selected' : ''}>${c}</option>`).join('')}
+          </select>
+          <input value="${escapeHtml(searchValue)}" oninput="searchValue = this.value; render();" placeholder="Suchen..." />
+        </div>
+        <div class="grid">
+          ${filtered.length ? filtered.map(itemCard).join('') : '<div class="empty">Keine passenden Kleidungsstücke gefunden.</div>'}
+        </div>
+      `;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function renderLaundry() {
+      const washItems = items.filter(x => x.status === 'in_wash');
+      const html = washItems.length
+        ? `<div class="grid">${washItems.map(itemCard).join('')}</div>`
+        : '<div class="empty">Alles ist sauber. Keine Wäsche aktuell.</div>';
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function renderOutfits() {
+      const html = `<h2 class="section-head">Outfit-Vorschläge</h2><div class="grid">${generateOutfits()}</div>`;
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function render() {
+      const navButtons = document.querySelectorAll('[data-tab]');
+      navButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === activeTab);
+      });
+
+      if (activeTab === 'home') renderHome();
+      else if (activeTab === 'wardrobe') renderWardrobe();
+      else if (activeTab === 'outfits') renderOutfits();
+      else renderLaundry();
+    }
+
+    function openModal() {
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+    }
+
+    function addItem() {
+      const name = document.getElementById('name').value.trim();
+      if (!name) {
+        alert('Bitte gib einen Namen ein.');
+        return;
+      }
+
+      items.unshift({
+        id: Date.now(),
+        name,
+        category: document.getElementById('category').value,
+        color: document.getElementById('color').value,
+        style: document.getElementById('style').value,
+        status: 'clean'
+      });
+
+      save();
+      closeModal();
+      document.getElementById('name').value = '';
+      render();
+    }
+
+    document.querySelectorAll('[data-tab]').forEach(button => {
+      button.addEventListener('click', () => {
+        activeTab = button.dataset.tab;
+        render();
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>
